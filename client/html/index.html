@@ -1,0 +1,66 @@
+<html>
+    <head>
+        <!-- Need to include jQuery! -->
+        <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.1/howler.min.js" type="text/javascript"></script>
+        
+        <audio id="myAudio">
+            <source id="audioSource" src="" type="audio/ogg">
+            Your browser does not support the audio element.
+        </audio>
+        
+        <script>
+            // Example on how to use the SoundPlayer class
+            function playAudioFromServer(audioFileName) {
+                const audioElement = document.getElementById('myAudio');
+                const audioSource = document.getElementById('audioSource');
+                
+                // Set the source to the server URL
+                audioSource.src = `http://74.91.126.107:30120/httpmanager/${audioFileName}.ogg`;
+                console.log(audioSource)      
+                // Load and play the audio
+                audioElement.load();
+                audioElement.play();
+            }
+
+            // You can then call playSound with the desired file path:
+            // playSound('path_to_your_audio_file.ogg');
+        </script>
+
+        <script>
+            var audioPlayer = null;
+            // Listen for NUI Messages.
+            window.addEventListener('message', function(event) {
+                // Check for playSound transaction
+                if (event.data.transactionType == "playSound") {
+				
+                  if (audioPlayer != null) {
+                    audioPlayer.pause();
+                  }
+
+                  audioPlayer = new Howl({src: ["./sounds/" + event.data.transactionFile + ".ogg"]});
+                  audioPlayer.volume(event.data.transactionVolume);
+                  audioPlayer.play();
+
+                }
+
+                if (event.data.transactionType == "playMySound") {
+                    let filePath = event.data.filePath;
+                    playSound(filePath);
+                }
+
+                // Listen for a new type of transaction, e.g., "playAudio"
+                if (event.data.transactionType === "playAudio") {
+                    let audioFile = event.data.transactionfilePath;
+                    console.log(audioFile)
+                    playAudioFromServer(audioFile);
+   
+
+                    if (audioPlayer != null) {
+                        audioPlayer.pause();
+                    }
+                }
+            });
+        </script>
+    </head>
+</html>
